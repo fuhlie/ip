@@ -36,14 +36,26 @@ public class Nori {
                 task.unmark();
                 System.out.println("OK, I've marked this task as not done yet:");
                 System.out.println("  " + task);
-            } else {
-                tasks.add(new Task(input));
-                System.out.println("Added: " + input);
+            } else if (input.startsWith("todo ")) {
+                addTask(tasks, new Todo(input.substring(5)));
+            } else if (input.startsWith("deadline ")) {
+                String[] parts = input.substring(9).split(" /by ", 2);
+                addTask(tasks, new Deadline(parts[0], parts[1]));
+            } else if (input.startsWith("event ")) {
+                String[] parts = input.substring(6).split(" /from | /to ", 3);
+                addTask(tasks, new Event(parts[0], parts[1], parts[2]));
             }
             System.out.println(LINE);
         }
 
         System.out.println("Bye. Hope to see you again soon!");
         System.out.println(LINE);
+    }
+
+    private static void addTask(List<Task> tasks, Task task) {
+        tasks.add(task);
+        System.out.println("Got it. I've added this task:");
+        System.out.println("  " + task);
+        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
 }
