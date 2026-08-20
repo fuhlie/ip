@@ -58,6 +58,12 @@ public class Nori {
             System.out.println("OK, I've marked this task as not done yet:");
             System.out.println("  " + unmarkedTask);
             break;
+        case "delete":
+            Task deletedTask = tasks.remove(parseTaskIndex(arguments, tasks));
+            System.out.println("Noted. I've removed this task:");
+            System.out.println("  " + deletedTask);
+            printTaskCount(tasks);
+            break;
         case "todo":
             requireDescription(arguments, "todo");
             addTask(tasks, new Todo(arguments));
@@ -73,7 +79,7 @@ public class Nori {
             break;
         default:
             throw new NoriException("I don't recognise that command. "
-                    + "Try todo, deadline, event, list, mark, unmark, or bye.");
+                    + "Try todo, deadline, event, list, mark, unmark, delete, or bye.");
         }
     }
 
@@ -138,6 +144,10 @@ public class Nori {
         tasks.add(task);
         System.out.println("Got it. I've added this task:");
         System.out.println("  " + task);
+        printTaskCount(tasks);
+    }
+
+    private static void printTaskCount(List<Task> tasks) {
         String taskWord = tasks.size() == 1 ? "task" : "tasks";
         System.out.println("Now you have " + tasks.size() + " " + taskWord + " in the list.");
     }
