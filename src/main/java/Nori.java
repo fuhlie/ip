@@ -15,7 +15,7 @@ public class Nori {
         System.out.println(LINE);
 
         Scanner scanner = new Scanner(System.in);
-        List<String> tasks = new ArrayList<>();
+        List<Task> tasks = new ArrayList<>();
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine();
             if (input.equals("bye")) {
@@ -26,8 +26,18 @@ public class Nori {
                 for (int i = 0; i < tasks.size(); i++) {
                     System.out.println((i + 1) + ". " + tasks.get(i));
                 }
+            } else if (input.startsWith("mark ")) {
+                Task task = tasks.get(Integer.parseInt(input.substring(5)) - 1);
+                task.mark();
+                System.out.println("Nice! I've marked this task as done:");
+                System.out.println("  " + task);
+            } else if (input.startsWith("unmark ")) {
+                Task task = tasks.get(Integer.parseInt(input.substring(7)) - 1);
+                task.unmark();
+                System.out.println("OK, I've marked this task as not done yet:");
+                System.out.println("  " + task);
             } else {
-                tasks.add(input);
+                tasks.add(new Task(input));
                 System.out.println("Added: " + input);
             }
             System.out.println(LINE);
