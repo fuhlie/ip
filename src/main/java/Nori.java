@@ -16,17 +16,17 @@ public class Nori {
 
         Scanner scanner = new Scanner(System.in);
         List<Task> tasks = new ArrayList<>();
-        while (scanner.hasNextLine()) {
+        boolean shouldExit = false;
+        while (scanner.hasNextLine() && !shouldExit) {
             String input = scanner.nextLine().trim();
-            if (input.equals("bye")) {
-                break;
-            }
             try {
-                handle(input, tasks);
+                shouldExit = handle(input, tasks);
             } catch (NoriException e) {
                 System.out.println(e.getMessage());
             }
-            System.out.println(LINE);
+            if (!shouldExit) {
+                System.out.println(LINE);
+            }
         }
 
         System.out.println("Bye. Hope to see you again soon!");
@@ -36,51 +36,52 @@ public class Nori {
     /**
      * Parses and executes one user command against the current task list.
      */
-    private static void handle(String input, List<Task> tasks) throws NoriException {
+    private static boolean handle(String input, List<Task> tasks) throws NoriException {
         String[] commandParts = input.split("\\s+", 2);
-        String command = commandParts[0];
+        Command command = Command.from(commandParts[0]);
         String arguments = commandParts.length == 2 ? commandParts[1].trim() : "";
 
         switch (command) {
-        case "list":
+        case BYE:
+            requireNoArguments(arguments, "bye");
+            return true;
+        case LIST:
             requireNoArguments(arguments, "list");
             showTasks(tasks);
             break;
-        case "mark":
+        case MARK:
             Task markedTask = tasks.get(parseTaskIndex(arguments, tasks));
             markedTask.mark();
             System.out.println("Nice! I've marked this task as done:");
             System.out.println("  " + markedTask);
             break;
-        case "unmark":
+        case UNMARK:
             Task unmarkedTask = tasks.get(parseTaskIndex(arguments, tasks));
             unmarkedTask.unmark();
             System.out.println("OK, I've marked this task as not done yet:");
             System.out.println("  " + unmarkedTask);
             break;
-        case "delete":
+        case DELETE:
             Task deletedTask = tasks.remove(parseTaskIndex(arguments, tasks));
             System.out.println("Noted. I've removed this task:");
             System.out.println("  " + deletedTask);
             printTaskCount(tasks);
             break;
-        case "todo":
+        case TODO:
             requireDescription(arguments, "todo");
             addTask(tasks, new Todo(arguments));
             break;
-        case "deadline":
+        case DEADLINE:
             String[] deadlineParts = splitAround(arguments, " /by ", "deadline DESCRIPTION /by TIME");
             addTask(tasks, new Deadline(deadlineParts[0], deadlineParts[1]));
             break;
-        case "event":
+        case EVENT:
             String[] fromParts = splitAround(arguments, " /from ", "event DESCRIPTION /from START /to END");
             String[] toParts = splitAround(fromParts[1], " /to ", "event DESCRIPTION /from START /to END");
             addTask(tasks, new Event(fromParts[0], toParts[0], toParts[1]));
             break;
-        default:
-            throw new NoriException("I don't recognise that command. "
-                    + "Try todo, deadline, event, list, mark, unmark, delete, or bye.");
         }
+        return false;
     }
 
     private static void showTasks(List<Task> tasks) {
