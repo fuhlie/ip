@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -13,12 +15,21 @@ public class Nori {
         System.out.println(LINE);
 
         Scanner scanner = new Scanner(System.in);
+        List<String> tasks = new ArrayList<>();
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine();
             if (input.equals("bye")) {
                 break;
             }
-            System.out.println(input);
+            if (input.equals("list")) {
+                System.out.println("Here are the tasks in your list:");
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println((i + 1) + ". " + tasks.get(i));
+                }
+            } else {
+                tasks.add(input);
+                System.out.println("Added: " + input);
+            }
             System.out.println(LINE);
         }
 
