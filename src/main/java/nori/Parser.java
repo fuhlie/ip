@@ -3,7 +3,7 @@ package nori;
 /**
  * Converts raw user input into commands and arguments.
  */
-public class Parser {
+public final class Parser {
     private Parser() {
     }
 
