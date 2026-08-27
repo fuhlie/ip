@@ -23,6 +23,15 @@ public abstract class Task {
         return isDone;
     }
 
+    /**
+     * Returns this task's description.
+     *
+     * @return Task description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
     public abstract String toStorageString();
 
     private String getStatusIcon() {

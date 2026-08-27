@@ -8,6 +8,7 @@ import java.util.Locale;
 public enum Command {
     BYE,
     LIST,
+    FIND,
     MARK,
     UNMARK,
     DELETE,
@@ -23,7 +24,7 @@ public enum Command {
             return valueOf(word.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new NoriException("I don't recognise that command. "
-                    + "Try todo, deadline, event, list, mark, unmark, delete, or bye.");
+                    + "Try todo, deadline, event, list, find, mark, unmark, delete, or bye.");
         }
     }
 }
