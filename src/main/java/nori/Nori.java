@@ -70,6 +70,12 @@ public class Nori {
                 requireNoArguments(arguments, "list");
                 showTasks();
                 break;
+            case FIND:
+                if (arguments.isEmpty()) {
+                    throw new NoriException("The search keyword cannot be empty.");
+                }
+                showMatches(tasks.find(arguments));
+                break;
             case MARK:
                 Task markedTask = tasks.get(parseTaskIndex(arguments));
                 markedTask.mark();
@@ -113,6 +119,17 @@ public class Nori {
         ui.show("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             ui.show((i + 1) + ". " + tasks.get(i));
+        }
+    }
+
+    private void showMatches(TaskList matches) {
+        if (matches.isEmpty()) {
+            ui.show("I couldn't find any matching tasks.");
+            return;
+        }
+        ui.show("Here are the matching tasks in your list:");
+        for (int i = 0; i < matches.size(); i++) {
+            ui.show((i + 1) + ". " + matches.get(i));
         }
     }
 

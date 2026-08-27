@@ -2,6 +2,7 @@ package nori;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import nori.task.Task;
 
@@ -72,5 +73,22 @@ public class TaskList {
      */
     public boolean isEmpty() {
         return tasks.isEmpty();
+    }
+
+    /**
+     * Finds tasks whose descriptions contain a keyword, ignoring letter case.
+     *
+     * @param keyword Keyword to find.
+     * @return New task list containing the matching tasks.
+     */
+    public TaskList find(String keyword) {
+        String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
+        List<Task> matches = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword)) {
+                matches.add(task);
+            }
+        }
+        return new TaskList(matches);
     }
 }

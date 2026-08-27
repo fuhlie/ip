@@ -41,6 +41,15 @@ public abstract class Task {
     }
 
     /**
+     * Returns this task's description.
+     *
+     * @return Task description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
      * Converts this task to the text representation used by storage.
      *
      * @return Storage representation of this task.
