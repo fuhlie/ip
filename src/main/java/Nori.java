@@ -1,52 +1,48 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
 /**
- * Entry point for the Nori task-tracking chatbot.
+ * Coordinates the components of the Nori task-tracking chatbot.
  */
 public class Nori {
-    private static final String LINE = "____________________________________________________________";
+    private final Storage storage;
+    private final Ui ui;
+    private TaskList tasks;
 
-    public static void main(String[] args) {
-        System.out.println(LINE);
-        System.out.println("Hello! I'm Nori.");
-        System.out.println("What can I do for you?");
-        System.out.println(LINE);
-
-        Scanner scanner = new Scanner(System.in);
-        List<Task> tasks;
-        try {
-            tasks = Storage.load();
-        } catch (NoriException e) {
-            System.out.println(e.getMessage());
-            tasks = new ArrayList<>();
-        }
-        boolean shouldExit = false;
-        while (scanner.hasNextLine() && !shouldExit) {
-            String input = scanner.nextLine().trim();
-            try {
-                shouldExit = handle(input, tasks);
-                Storage.save(tasks);
-            } catch (NoriException e) {
-                System.out.println(e.getMessage());
-            }
-            if (!shouldExit) {
-                System.out.println(LINE);
-            }
-        }
-
-        System.out.println("Bye. Hope to see you again soon!");
-        System.out.println(LINE);
+    public Nori() {
+        storage = new Storage("data/nori.txt");
+        ui = new Ui();
     }
 
-    /**
-     * Parses and executes one user command against the current task list.
-     */
-    private static boolean handle(String input, List<Task> tasks) throws NoriException {
-        String[] commandParts = input.split("\\s+", 2);
-        Command command = Command.from(commandParts[0]);
-        String arguments = commandParts.length == 2 ? commandParts[1].trim() : "";
+    public static void main(String[] args) {
+        new Nori().run();
+    }
+
+    public void run() {
+        ui.showWelcome();
+        try {
+            tasks = storage.load();
+        } catch (NoriException e) {
+            ui.show(e.getMessage());
+            tasks = new TaskList();
+        }
+
+        boolean shouldExit = false;
+        while (ui.hasNextCommand() && !shouldExit) {
+            try {
+                shouldExit = handle(ui.readCommand());
+                storage.save(tasks);
+            } catch (NoriException e) {
+                ui.show(e.getMessage());
+            }
+            if (!shouldExit) {
+                ui.showLine();
+            }
+        }
+        ui.showGoodbye();
+    }
+
+    private boolean handle(String input) throws NoriException {
+        ParsedCommand parsedCommand = Parser.parse(input);
+        Command command = parsedCommand.getCommand();
+        String arguments = parsedCommand.getArguments();
 
         switch (command) {
         case BYE:
@@ -54,58 +50,55 @@ public class Nori {
             return true;
         case LIST:
             requireNoArguments(arguments, "list");
-            showTasks(tasks);
+            showTasks();
             break;
         case MARK:
-            Task markedTask = tasks.get(parseTaskIndex(arguments, tasks));
+            Task markedTask = tasks.get(parseTaskIndex(arguments));
             markedTask.mark();
-            System.out.println("Nice! I've marked this task as done:");
-            System.out.println("  " + markedTask);
+            ui.show("Nice! I've marked this task as done:");
+            ui.show("  " + markedTask);
             break;
         case UNMARK:
-            Task unmarkedTask = tasks.get(parseTaskIndex(arguments, tasks));
+            Task unmarkedTask = tasks.get(parseTaskIndex(arguments));
             unmarkedTask.unmark();
-            System.out.println("OK, I've marked this task as not done yet:");
-            System.out.println("  " + unmarkedTask);
+            ui.show("OK, I've marked this task as not done yet:");
+            ui.show("  " + unmarkedTask);
             break;
         case DELETE:
-            Task deletedTask = tasks.remove(parseTaskIndex(arguments, tasks));
-            System.out.println("Noted. I've removed this task:");
-            System.out.println("  " + deletedTask);
-            printTaskCount(tasks);
+            Task deletedTask = tasks.remove(parseTaskIndex(arguments));
+            ui.show("Noted. I've removed this task:");
+            ui.show("  " + deletedTask);
+            printTaskCount();
             break;
         case TODO:
             requireDescription(arguments, "todo");
-            addTask(tasks, new Todo(arguments));
+            addTask(new Todo(arguments));
             break;
         case DEADLINE:
-            String[] deadlineParts = splitAround(arguments, " /by ", "deadline DESCRIPTION /by TIME");
-            addTask(tasks, new Deadline(deadlineParts[0], deadlineParts[1]));
+            String[] deadlineParts = splitAround(arguments, " /by ", "deadline DESCRIPTION /by DATE");
+            addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
             break;
         case EVENT:
             String[] fromParts = splitAround(arguments, " /from ", "event DESCRIPTION /from START /to END");
             String[] toParts = splitAround(fromParts[1], " /to ", "event DESCRIPTION /from START /to END");
-            addTask(tasks, new Event(fromParts[0], toParts[0], toParts[1]));
+            addTask(new Event(fromParts[0], toParts[0], toParts[1]));
             break;
         }
         return false;
     }
 
-    private static void showTasks(List<Task> tasks) {
+    private void showTasks() {
         if (tasks.isEmpty()) {
-            System.out.println("Your task list is empty.");
+            ui.show("Your task list is empty.");
             return;
         }
-        System.out.println("Here are the tasks in your list:");
+        ui.show("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + ". " + tasks.get(i));
+            ui.show((i + 1) + ". " + tasks.get(i));
         }
     }
 
-    /**
-     * Converts a one-based user task number to a valid zero-based list index.
-     */
-    private static int parseTaskIndex(String argument, List<Task> tasks) throws NoriException {
+    private int parseTaskIndex(String argument) throws NoriException {
         if (argument.isEmpty()) {
             throw new NoriException("Please provide a task number.");
         }
@@ -120,9 +113,6 @@ public class Nori {
         }
     }
 
-    /**
-     * Splits arguments around a required marker and verifies both resulting values.
-     */
     private static String[] splitAround(String arguments, String marker, String usage) throws NoriException {
         int markerIndex = arguments.indexOf(marker);
         if (markerIndex < 0) {
@@ -148,15 +138,15 @@ public class Nori {
         }
     }
 
-    private static void addTask(List<Task> tasks, Task task) {
+    private void addTask(Task task) {
         tasks.add(task);
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + task);
-        printTaskCount(tasks);
+        ui.show("Got it. I've added this task:");
+        ui.show("  " + task);
+        printTaskCount();
     }
 
-    private static void printTaskCount(List<Task> tasks) {
+    private void printTaskCount() {
         String taskWord = tasks.size() == 1 ? "task" : "tasks";
-        System.out.println("Now you have " + tasks.size() + " " + taskWord + " in the list.");
+        ui.show("Now you have " + tasks.size() + " " + taskWord + " in the list.");
     }
 }
