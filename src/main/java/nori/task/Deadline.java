@@ -14,6 +14,13 @@ public class Deadline extends Task {
 
     private final LocalDate by;
 
+    /**
+     * Creates an incomplete deadline task.
+     *
+     * @param description Description of the task.
+     * @param by Deadline date in {@code yyyy-MM-dd} format.
+     * @throws NoriException If the date is not valid ISO date text.
+     */
     public Deadline(String description, String by) throws NoriException {
         super(description);
         try {
@@ -28,11 +35,13 @@ public class Deadline extends Task {
         return "D";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toStorageString() {
         return "D | " + (isDone() ? "1" : "0") + " | " + description + " | " + by;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return super.toString() + " (by: " + by.format(DISPLAY_FORMAT) + ")";
