@@ -13,15 +13,26 @@ public class Nori {
     private final Ui ui;
     private TaskList tasks;
 
+    /**
+     * Creates a chatbot using the default save file and console UI.
+     */
     public Nori() {
         storage = new Storage("data/nori.txt");
         ui = new Ui();
     }
 
+    /**
+     * Starts Nori as a command-line application.
+     *
+     * @param args Command-line arguments, which are not used.
+     */
     public static void main(String[] args) {
         new Nori().run();
     }
 
+    /**
+     * Loads saved tasks and processes commands until the user exits.
+     */
     public void run() {
         ui.showWelcome();
         try {

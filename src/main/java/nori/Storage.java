@@ -17,10 +17,21 @@ import nori.task.Todo;
 public class Storage {
     private final Path filePath;
 
+    /**
+     * Creates storage backed by the given file.
+     *
+     * @param filePath Path of the task data file.
+     */
     public Storage(String filePath) {
         this.filePath = Path.of(filePath);
     }
 
+    /**
+     * Loads tasks from the data file.
+     *
+     * @return Saved tasks, or an empty task list if the file does not exist.
+     * @throws NoriException If the file cannot be read or contains invalid task data.
+     */
     public TaskList load() throws NoriException {
         List<Task> tasks = new ArrayList<>();
         if (!Files.exists(filePath)) {
@@ -37,6 +48,12 @@ public class Storage {
         }
     }
 
+    /**
+     * Writes all tasks to the data file, creating its parent directory if needed.
+     *
+     * @param tasks Tasks to save.
+     * @throws NoriException If the data file cannot be written.
+     */
     public void save(TaskList tasks) throws NoriException {
         List<String> lines = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
