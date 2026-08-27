@@ -15,12 +15,19 @@ public class Nori {
         System.out.println(LINE);
 
         Scanner scanner = new Scanner(System.in);
-        List<Task> tasks = new ArrayList<>();
+        List<Task> tasks;
+        try {
+            tasks = Storage.load();
+        } catch (NoriException e) {
+            System.out.println(e.getMessage());
+            tasks = new ArrayList<>();
+        }
         boolean shouldExit = false;
         while (scanner.hasNextLine() && !shouldExit) {
             String input = scanner.nextLine().trim();
             try {
                 shouldExit = handle(input, tasks);
+                Storage.save(tasks);
             } catch (NoriException e) {
                 System.out.println(e.getMessage());
             }
