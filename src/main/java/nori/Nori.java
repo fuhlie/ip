@@ -52,44 +52,44 @@ public class Nori {
         String arguments = parsedCommand.getArguments();
 
         switch (command) {
-        case BYE:
-            requireNoArguments(arguments, "bye");
-            return true;
-        case LIST:
-            requireNoArguments(arguments, "list");
-            showTasks();
-            break;
-        case MARK:
-            Task markedTask = tasks.get(parseTaskIndex(arguments));
-            markedTask.mark();
-            ui.show("Nice! I've marked this task as done:");
-            ui.show("  " + markedTask);
-            break;
-        case UNMARK:
-            Task unmarkedTask = tasks.get(parseTaskIndex(arguments));
-            unmarkedTask.unmark();
-            ui.show("OK, I've marked this task as not done yet:");
-            ui.show("  " + unmarkedTask);
-            break;
-        case DELETE:
-            Task deletedTask = tasks.remove(parseTaskIndex(arguments));
-            ui.show("Noted. I've removed this task:");
-            ui.show("  " + deletedTask);
-            printTaskCount();
-            break;
-        case TODO:
-            requireDescription(arguments, "todo");
-            addTask(new Todo(arguments));
-            break;
-        case DEADLINE:
-            String[] deadlineParts = splitAround(arguments, " /by ", "deadline DESCRIPTION /by DATE");
-            addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
-            break;
-        case EVENT:
-            String[] fromParts = splitAround(arguments, " /from ", "event DESCRIPTION /from START /to END");
-            String[] toParts = splitAround(fromParts[1], " /to ", "event DESCRIPTION /from START /to END");
-            addTask(new Event(fromParts[0], toParts[0], toParts[1]));
-            break;
+            case BYE:
+                requireNoArguments(arguments, "bye");
+                return true;
+            case LIST:
+                requireNoArguments(arguments, "list");
+                showTasks();
+                break;
+            case MARK:
+                Task markedTask = tasks.get(parseTaskIndex(arguments));
+                markedTask.mark();
+                ui.show("Nice! I've marked this task as done:");
+                ui.show("  " + markedTask);
+                break;
+            case UNMARK:
+                Task unmarkedTask = tasks.get(parseTaskIndex(arguments));
+                unmarkedTask.unmark();
+                ui.show("OK, I've marked this task as not done yet:");
+                ui.show("  " + unmarkedTask);
+                break;
+            case DELETE:
+                Task deletedTask = tasks.remove(parseTaskIndex(arguments));
+                ui.show("Noted. I've removed this task:");
+                ui.show("  " + deletedTask);
+                printTaskCount();
+                break;
+            case TODO:
+                requireDescription(arguments, "todo");
+                addTask(new Todo(arguments));
+                break;
+            case DEADLINE:
+                String[] deadlineParts = splitAround(arguments, " /by ", "deadline DESCRIPTION /by DATE");
+                addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
+                break;
+            case EVENT:
+                String[] fromParts = splitAround(arguments, " /from ", "event DESCRIPTION /from START /to END");
+                String[] toParts = splitAround(fromParts[1], " /to ", "event DESCRIPTION /from START /to END");
+                addTask(new Event(fromParts[0], toParts[0], toParts[1]));
+                break;
         }
         return false;
     }
@@ -130,7 +130,7 @@ public class Nori {
         if (before.isEmpty() || after.isEmpty()) {
             throw new NoriException("Please use this format: " + usage);
         }
-        return new String[]{before, after};
+        return new String[] { before, after };
     }
 
     private static void requireDescription(String description, String taskType) throws NoriException {

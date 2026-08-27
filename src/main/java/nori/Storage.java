@@ -59,20 +59,20 @@ public class Storage {
 
         Task task;
         switch (fields[0]) {
-        case "T":
-            requireFieldCount(fields, 3);
-            task = new Todo(fields[2]);
-            break;
-        case "D":
-            requireFieldCount(fields, 4);
-            task = new Deadline(fields[2], fields[3]);
-            break;
-        case "E":
-            requireFieldCount(fields, 5);
-            task = new Event(fields[2], fields[3], fields[4]);
-            break;
-        default:
-            throw new NoriException("I couldn't read a task in your save file.");
+            case "T":
+                requireFieldCount(fields, 3);
+                task = new Todo(fields[2]);
+                break;
+            case "D":
+                requireFieldCount(fields, 4);
+                task = new Deadline(fields[2], fields[3]);
+                break;
+            case "E":
+                requireFieldCount(fields, 5);
+                task = new Event(fields[2], fields[3], fields[4]);
+                break;
+            default:
+                throw new NoriException("I couldn't read a task in your save file.");
         }
 
         if ("1".equals(fields[1])) {
