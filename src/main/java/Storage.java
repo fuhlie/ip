@@ -8,33 +8,37 @@ import java.util.List;
  * Loads and saves Nori tasks in a local text file.
  */
 public class Storage {
-    private static final Path FILE_PATH = Path.of("data", "nori.txt");
+    private final Path filePath;
 
-    public static List<Task> load() throws NoriException {
+    public Storage(String filePath) {
+        this.filePath = Path.of(filePath);
+    }
+
+    public TaskList load() throws NoriException {
         List<Task> tasks = new ArrayList<>();
-        if (!Files.exists(FILE_PATH)) {
-            return tasks;
+        if (!Files.exists(filePath)) {
+            return new TaskList(tasks);
         }
 
         try {
-            for (String line : Files.readAllLines(FILE_PATH)) {
+            for (String line : Files.readAllLines(filePath)) {
                 tasks.add(parseTask(line));
             }
-            return tasks;
+            return new TaskList(tasks);
         } catch (IOException e) {
             throw new NoriException("I couldn't load your saved tasks.");
         }
     }
 
-    public static void save(List<Task> tasks) throws NoriException {
+    public void save(TaskList tasks) throws NoriException {
         List<String> lines = new ArrayList<>();
-        for (Task task : tasks) {
-            lines.add(task.toStorageString());
+        for (int i = 0; i < tasks.size(); i++) {
+            lines.add(tasks.get(i).toStorageString());
         }
 
         try {
-            Files.createDirectories(FILE_PATH.getParent());
-            Files.write(FILE_PATH, lines);
+            Files.createDirectories(filePath.getParent());
+            Files.write(filePath, lines);
         } catch (IOException e) {
             throw new NoriException("I couldn't save your tasks.");
         }
