@@ -1,0 +1,80 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Loads and saves Nori tasks in a local text file.
+ */
+public class Storage {
+    private static final Path FILE_PATH = Path.of("data", "nori.txt");
+
+    public static List<Task> load() throws NoriException {
+        List<Task> tasks = new ArrayList<>();
+        if (!Files.exists(FILE_PATH)) {
+            return tasks;
+        }
+
+        try {
+            for (String line : Files.readAllLines(FILE_PATH)) {
+                tasks.add(parseTask(line));
+            }
+            return tasks;
+        } catch (IOException e) {
+            throw new NoriException("I couldn't load your saved tasks.");
+        }
+    }
+
+    public static void save(List<Task> tasks) throws NoriException {
+        List<String> lines = new ArrayList<>();
+        for (Task task : tasks) {
+            lines.add(task.toStorageString());
+        }
+
+        try {
+            Files.createDirectories(FILE_PATH.getParent());
+            Files.write(FILE_PATH, lines);
+        } catch (IOException e) {
+            throw new NoriException("I couldn't save your tasks.");
+        }
+    }
+
+    private static Task parseTask(String line) throws NoriException {
+        String[] fields = line.split(" \\| ", -1);
+        if (fields.length < 3) {
+            throw new NoriException("I couldn't read a task in your save file.");
+        }
+
+        Task task;
+        switch (fields[0]) {
+        case "T":
+            requireFieldCount(fields, 3);
+            task = new Todo(fields[2]);
+            break;
+        case "D":
+            requireFieldCount(fields, 4);
+            task = new Deadline(fields[2], fields[3]);
+            break;
+        case "E":
+            requireFieldCount(fields, 5);
+            task = new Event(fields[2], fields[3], fields[4]);
+            break;
+        default:
+            throw new NoriException("I couldn't read a task in your save file.");
+        }
+
+        if ("1".equals(fields[1])) {
+            task.mark();
+        } else if (!"0".equals(fields[1])) {
+            throw new NoriException("I couldn't read a task in your save file.");
+        }
+        return task;
+    }
+
+    private static void requireFieldCount(String[] fields, int expectedCount) throws NoriException {
+        if (fields.length != expectedCount) {
+            throw new NoriException("I couldn't read a task in your save file.");
+        }
+    }
+}

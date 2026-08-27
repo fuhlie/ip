@@ -17,6 +17,12 @@ public abstract class Task {
         isDone = false;
     }
 
+    public boolean isDone() {
+        return isDone;
+    }
+
+    public abstract String toStorageString();
+
     private String getStatusIcon() {
         return isDone ? "X" : " ";
     }
