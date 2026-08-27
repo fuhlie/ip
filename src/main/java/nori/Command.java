@@ -1,3 +1,5 @@
+package nori;
+
 import java.util.Locale;
 
 /**

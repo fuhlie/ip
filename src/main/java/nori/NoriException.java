@@ -1,3 +1,5 @@
+package nori;
+
 /**
  * Represents an invalid command or argument supplied to Nori.
  */

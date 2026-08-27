@@ -1,3 +1,10 @@
+package nori;
+
+import nori.task.Deadline;
+import nori.task.Event;
+import nori.task.Task;
+import nori.task.Todo;
+
 /**
  * Coordinates the components of the Nori task-tracking chatbot.
  */

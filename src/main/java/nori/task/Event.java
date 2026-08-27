@@ -1,3 +1,5 @@
+package nori.task;
+
 /**
  * Represents a task that takes place over a given period.
  */

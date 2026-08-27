@@ -1,5 +1,9 @@
+package nori;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import nori.task.Task;
 
 /**
  * Owns the collection of tasks managed by Nori.
