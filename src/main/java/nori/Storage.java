@@ -1,8 +1,15 @@
+package nori;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import nori.task.Deadline;
+import nori.task.Event;
+import nori.task.Task;
+import nori.task.Todo;
 
 /**
  * Loads and saves Nori tasks in a local text file.

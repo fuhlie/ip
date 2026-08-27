@@ -1,3 +1,5 @@
+package nori;
+
 /**
  * Contains a parsed command and its remaining arguments.
  */

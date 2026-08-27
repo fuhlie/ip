@@ -1,3 +1,5 @@
+package nori;
+
 /**
  * Converts raw user input into commands and arguments.
  */
