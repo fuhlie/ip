@@ -12,13 +12,28 @@ public class Nori {
     private final Storage storage;
     private final Ui ui;
     private TaskList tasks;
+    private boolean shouldExit;
 
     /**
      * Creates a chatbot using the default save file and console UI.
      */
     public Nori() {
-        storage = new Storage("data/nori.txt");
+        this("data/nori.txt");
+    }
+
+    /**
+     * Creates a chatbot that saves tasks at the given path.
+     *
+     * @param filePath Path of the task data file.
+     */
+    public Nori(String filePath) {
+        storage = new Storage(filePath);
         ui = new Ui();
+        try {
+            tasks = storage.load();
+        } catch (NoriException e) {
+            tasks = new TaskList();
+        }
     }
 
     /**
@@ -35,29 +50,54 @@ public class Nori {
      */
     public void run() {
         ui.showWelcome();
-        try {
-            tasks = storage.load();
-        } catch (NoriException e) {
-            ui.show(e.getMessage());
-            tasks = new TaskList();
-        }
-
-        boolean shouldExit = false;
         while (ui.hasNextCommand() && !shouldExit) {
-            try {
-                shouldExit = handle(ui.readCommand());
-                storage.save(tasks);
-            } catch (NoriException e) {
-                ui.show(e.getMessage());
-            }
+            ui.show(getResponse(ui.readCommand()));
             if (!shouldExit) {
                 ui.showLine();
             }
         }
-        ui.showGoodbye();
+        if (shouldExit) {
+            ui.showLine();
+        } else {
+            ui.showGoodbye();
+        }
     }
 
-    private boolean handle(String input) throws NoriException {
+    /**
+     * Processes one command and returns the text that should be shown to the user.
+     *
+     * @param input Command entered by the user.
+     * @return Nori's response.
+     */
+    public String getResponse(String input) {
+        try {
+            String response = handle(input);
+            storage.save(tasks);
+            return response;
+        } catch (NoriException e) {
+            return e.getMessage();
+        }
+    }
+
+    /**
+     * Returns the greeting used by both the text and graphical interfaces.
+     *
+     * @return Nori's greeting.
+     */
+    public String getWelcomeMessage() {
+        return "Hello! I'm Nori.\nWhat can I do for you?";
+    }
+
+    /**
+     * Reports whether the user has entered the {@code bye} command.
+     *
+     * @return True if Nori should stop accepting commands.
+     */
+    public boolean shouldExit() {
+        return shouldExit;
+    }
+
+    private String handle(String input) throws NoriException {
         ParsedCommand parsedCommand = Parser.parse(input);
         Command command = parsedCommand.getCommand();
         String arguments = parsedCommand.getArguments();
@@ -65,74 +105,56 @@ public class Nori {
         switch (command) {
             case BYE:
                 requireNoArguments(arguments, "bye");
-                return true;
+                shouldExit = true;
+                return "Bye. Hope to see you again soon!";
             case LIST:
                 requireNoArguments(arguments, "list");
-                showTasks();
-                break;
+                return formatTasks(tasks, "Here are the tasks in your list:", "Your task list is empty.");
             case FIND:
                 if (arguments.isEmpty()) {
                     throw new NoriException("The search keyword cannot be empty.");
                 }
-                showMatches(tasks.find(arguments));
-                break;
+                return formatTasks(tasks.find(arguments), "Here are the matching tasks in your list:",
+                        "I couldn't find any matching tasks.");
             case MARK:
                 Task markedTask = tasks.get(parseTaskIndex(arguments));
                 markedTask.mark();
-                ui.show("Nice! I've marked this task as done:");
-                ui.show("  " + markedTask);
-                break;
+                return "Nice! I've marked this task as done:\n  " + markedTask;
             case UNMARK:
                 Task unmarkedTask = tasks.get(parseTaskIndex(arguments));
                 unmarkedTask.unmark();
-                ui.show("OK, I've marked this task as not done yet:");
-                ui.show("  " + unmarkedTask);
-                break;
+                return "OK, I've marked this task as not done yet:\n  " + unmarkedTask;
             case DELETE:
                 Task deletedTask = tasks.remove(parseTaskIndex(arguments));
-                ui.show("Noted. I've removed this task:");
-                ui.show("  " + deletedTask);
-                printTaskCount();
-                break;
+                return "Noted. I've removed this task:\n  " + deletedTask + "\n" + formatTaskCount();
             case TODO:
                 requireDescription(arguments, "todo");
-                addTask(new Todo(arguments));
-                break;
+                return addTask(new Todo(arguments));
             case DEADLINE:
                 String[] deadlineParts = splitAround(arguments, " /by ", "deadline DESCRIPTION /by DATE");
-                addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
-                break;
+                return addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
             case EVENT:
                 String[] fromParts = splitAround(arguments, " /from ", "event DESCRIPTION /from START /to END");
                 String[] toParts = splitAround(fromParts[1], " /to ", "event DESCRIPTION /from START /to END");
-                addTask(new Event(fromParts[0], toParts[0], toParts[1]));
-                break;
+                return addTask(new Event(fromParts[0], toParts[0], toParts[1]));
             default:
                 throw new AssertionError("Unhandled command: " + command);
         }
-        return false;
     }
 
-    private void showTasks() {
-        if (tasks.isEmpty()) {
-            ui.show("Your task list is empty.");
-            return;
+    private static String formatTasks(TaskList taskList, String heading, String emptyMessage) {
+        if (taskList.isEmpty()) {
+            return emptyMessage;
         }
-        ui.show("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            ui.show((i + 1) + ". " + tasks.get(i));
-        }
-    }
 
-    private void showMatches(TaskList matches) {
-        if (matches.isEmpty()) {
-            ui.show("I couldn't find any matching tasks.");
-            return;
+        StringBuilder response = new StringBuilder(heading);
+        for (int i = 0; i < taskList.size(); i++) {
+            response.append(System.lineSeparator())
+                    .append(i + 1)
+                    .append(". ")
+                    .append(taskList.get(i));
         }
-        ui.show("Here are the matching tasks in your list:");
-        for (int i = 0; i < matches.size(); i++) {
-            ui.show((i + 1) + ". " + matches.get(i));
-        }
+        return response.toString();
     }
 
     private int parseTaskIndex(String argument) throws NoriException {
@@ -175,15 +197,13 @@ public class Nori {
         }
     }
 
-    private void addTask(Task task) {
+    private String addTask(Task task) {
         tasks.add(task);
-        ui.show("Got it. I've added this task:");
-        ui.show("  " + task);
-        printTaskCount();
+        return "Got it. I've added this task:\n  " + task + "\n" + formatTaskCount();
     }
 
-    private void printTaskCount() {
+    private String formatTaskCount() {
         String taskWord = tasks.size() == 1 ? "task" : "tasks";
-        ui.show("Now you have " + tasks.size() + " " + taskWord + " in the list.");
+        return "Now you have " + tasks.size() + " " + taskWord + " in the list.";
     }
 }
