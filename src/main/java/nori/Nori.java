@@ -119,14 +119,14 @@ public class Nori {
             case MARK:
                 Task markedTask = tasks.get(parseTaskIndex(arguments));
                 markedTask.mark();
-                return "Nice! I've marked this task as done:\n  " + markedTask;
+                return joinLines("Nice! I've marked this task as done:", "  " + markedTask);
             case UNMARK:
                 Task unmarkedTask = tasks.get(parseTaskIndex(arguments));
                 unmarkedTask.unmark();
-                return "OK, I've marked this task as not done yet:\n  " + unmarkedTask;
+                return joinLines("OK, I've marked this task as not done yet:", "  " + unmarkedTask);
             case DELETE:
                 Task deletedTask = tasks.remove(parseTaskIndex(arguments));
-                return "Noted. I've removed this task:\n  " + deletedTask + "\n" + formatTaskCount();
+                return joinLines("Noted. I've removed this task:", "  " + deletedTask, formatTaskCount());
             case TODO:
                 requireDescription(arguments, "todo");
                 return addTask(new Todo(arguments));
@@ -199,11 +199,21 @@ public class Nori {
 
     private String addTask(Task task) {
         tasks.add(task);
-        return "Got it. I've added this task:\n  " + task + "\n" + formatTaskCount();
+        return joinLines("Got it. I've added this task:", "  " + task, formatTaskCount());
     }
 
     private String formatTaskCount() {
         String taskWord = tasks.size() == 1 ? "task" : "tasks";
         return "Now you have " + tasks.size() + " " + taskWord + " in the list.";
+    }
+
+    /**
+     * Joins any number of response lines using the platform line separator.
+     *
+     * @param lines Lines to join.
+     * @return Lines combined into one response.
+     */
+    private static String joinLines(String... lines) {
+        return String.join(System.lineSeparator(), lines);
     }
 }
