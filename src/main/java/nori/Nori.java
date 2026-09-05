@@ -107,6 +107,8 @@ public class Nori {
                 String[] toParts = splitAround(fromParts[1], " /to ", "event DESCRIPTION /from START /to END");
                 addTask(new Event(fromParts[0], toParts[0], toParts[1]));
                 break;
+            default:
+                throw new AssertionError("Unhandled command: " + command);
         }
         return false;
     }
