@@ -1,12 +1,20 @@
 package nori;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
 import nori.task.Todo;
 
 class TaskListTest {
+    @Test
+    void add_nullTask_throwsAssertionError() {
+        TaskList tasks = new TaskList();
+
+        assertThrows(AssertionError.class, () -> tasks.add(null));
+    }
+
     @Test
     void find_keywordWithDifferentCase_returnsMatchingTasks() {
         TaskList tasks = new TaskList();
