@@ -12,6 +12,8 @@ public enum Command {
     LIST,
     /** Finds tasks by description. */
     FIND,
+    /** Displays instructions for every command. */
+    HELP,
     /** Marks a task as complete. */
     MARK,
     /** Marks a task as incomplete. */
@@ -37,7 +39,7 @@ public enum Command {
             return valueOf(word.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new NoriException("I don't recognise that command. "
-                    + "Try todo, deadline, event, list, find, mark, unmark, delete, or bye.");
+                    + "Try help to see the available commands.");
         }
     }
 }
