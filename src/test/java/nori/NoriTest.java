@@ -24,7 +24,18 @@ class NoriTest {
     void getResponse_invalidCommand_returnsExplanation() {
         Nori nori = new Nori(tempDirectory.resolve("nori.txt").toString());
 
-        assertTrue(nori.getResponse("dance").contains("don't recognise"));
+        assertTrue(nori.getResponse("dance").contains("Try help"));
+    }
+
+    @Test
+    void getResponse_helpCommand_returnsCommandUsage() {
+        Nori nori = new Nori(tempDirectory.resolve("nori.txt").toString());
+
+        String response = nori.getResponse("help");
+
+        assertTrue(response.contains("todo DESCRIPTION"));
+        assertTrue(response.contains("deadline DESCRIPTION /by DATE"));
+        assertTrue(response.contains("event DESCRIPTION /from START /to END"));
     }
 
     @Test

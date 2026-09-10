@@ -116,6 +116,18 @@ public class Nori {
                 }
                 return formatTasks(tasks.find(arguments), "Here are the matching tasks in your list:",
                         "I couldn't find any matching tasks.");
+            case HELP:
+                requireNoArguments(arguments, "help");
+                return joinLines("Here are the commands you can use:",
+                        "  todo DESCRIPTION",
+                        "  deadline DESCRIPTION /by DATE",
+                        "  event DESCRIPTION /from START /to END",
+                        "  list",
+                        "  find KEYWORD",
+                        "  mark NUMBER",
+                        "  unmark NUMBER",
+                        "  delete NUMBER",
+                        "  bye");
             case MARK:
                 Task markedTask = tasks.get(parseTaskIndex(arguments));
                 markedTask.mark();
