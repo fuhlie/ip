@@ -15,6 +15,8 @@ import nori.task.Todo;
  * Loads and saves Nori tasks in a local text file.
  */
 public class Storage {
+    private static final String INVALID_DATA_MESSAGE = "I couldn't read a task in your save file.";
+
     private final Path filePath;
 
     /**
@@ -71,38 +73,36 @@ public class Storage {
     private static Task parseTask(String line) throws NoriException {
         String[] fields = line.split(" \\| ", -1);
         if (fields.length < 3) {
-            throw new NoriException("I couldn't read a task in your save file.");
+            throw new NoriException(INVALID_DATA_MESSAGE);
         }
 
-        Task task;
-        switch (fields[0]) {
-            case "T":
+        Task task = switch (fields[0]) {
+            case "T" -> {
                 requireFieldCount(fields, 3);
-                task = new Todo(fields[2]);
-                break;
-            case "D":
+                yield new Todo(fields[2]);
+            }
+            case "D" -> {
                 requireFieldCount(fields, 4);
-                task = new Deadline(fields[2], fields[3]);
-                break;
-            case "E":
+                yield new Deadline(fields[2], fields[3]);
+            }
+            case "E" -> {
                 requireFieldCount(fields, 5);
-                task = new Event(fields[2], fields[3], fields[4]);
-                break;
-            default:
-                throw new NoriException("I couldn't read a task in your save file.");
-        }
+                yield new Event(fields[2], fields[3], fields[4]);
+            }
+            default -> throw new NoriException(INVALID_DATA_MESSAGE);
+        };
 
         if ("1".equals(fields[1])) {
             task.mark();
         } else if (!"0".equals(fields[1])) {
-            throw new NoriException("I couldn't read a task in your save file.");
+            throw new NoriException(INVALID_DATA_MESSAGE);
         }
         return task;
     }
 
     private static void requireFieldCount(String[] fields, int expectedCount) throws NoriException {
         if (fields.length != expectedCount) {
-            throw new NoriException("I couldn't read a task in your save file.");
+            throw new NoriException(INVALID_DATA_MESSAGE);
         }
     }
 }
