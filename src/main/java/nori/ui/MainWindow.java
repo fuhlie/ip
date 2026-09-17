@@ -49,9 +49,12 @@ public class MainWindow {
         }
 
         String response = nori.getResponse(input);
+        DialogBox noriDialog = nori.wasLastResponseError()
+                ? DialogBox.getErrorDialog(response)
+                : DialogBox.getNoriDialog(response);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input),
-                DialogBox.getNoriDialog(response));
+                noriDialog);
         userInput.clear();
 
         if (nori.shouldExit()) {

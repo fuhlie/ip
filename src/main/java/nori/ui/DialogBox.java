@@ -54,14 +54,27 @@ public class DialogBox extends HBox {
      */
     public static DialogBox getNoriDialog(String text) {
         DialogBox dialogBox = new DialogBox(text, "Nori");
-        dialogBox.flip();
+        dialogBox.styleAsNoriReply();
+        return dialogBox;
+    }
+
+    /**
+     * Creates an emphasized Nori reply that explains invalid input.
+     *
+     * @param text Error guidance to display.
+     * @return Error dialog box.
+     */
+    public static DialogBox getErrorDialog(String text) {
+        DialogBox dialogBox = getNoriDialog(text);
+        dialogBox.dialog.getStyleClass().add("error-bubble");
+        dialogBox.avatar.getStyleClass().add("error-avatar");
         return dialogBox;
     }
 
     /**
      * Places Nori's avatar on the left and applies the reply style.
      */
-    private void flip() {
+    private void styleAsNoriReply() {
         ObservableList<Node> children = FXCollections.observableArrayList(getChildren());
         Collections.reverse(children);
         getChildren().setAll(children);

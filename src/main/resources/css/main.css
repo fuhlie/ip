@@ -8,6 +8,28 @@
     -fx-background-color: transparent;
 }
 
+.app-header {
+    -fx-background-color: linear-gradient(to right, #174c3b, #2e7d5b);
+    -fx-padding: 12px 18px 11px 18px;
+}
+
+.app-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.app-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #d9eee4;
+}
+
+.composer {
+    -fx-background-color: #e8efeb;
+    -fx-border-color: #d3dfd8 transparent transparent transparent;
+    -fx-padding: 9px;
+}
+
 .text-field {
     -fx-background-color: white;
     -fx-background-radius: 8px;
@@ -27,4 +49,9 @@
 
 .button:hover {
     -fx-background-color: #246548;
+}
+
+.button:disabled,
+.text-field:disabled {
+    -fx-opacity: 0.65;
 }
