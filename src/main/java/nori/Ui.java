@@ -48,7 +48,7 @@ public class Ui {
      * Prints Nori's farewell and a separator.
      */
     public void showGoodbye() {
-        show("Bye. Hope to see you again soon!");
+        show("All tucked away. Take care, and see you next time!");
         showLine();
     }
 
@@ -64,8 +64,8 @@ public class Ui {
      */
     public void showWelcome() {
         showLine();
-        show("Hello! I'm Nori.");
-        show("What can I do for you?");
+        show("Hello! I'm Nori, your calm corner for busy days.");
+        show("Tell me what you need to remember, or type help.");
         showLine();
     }
 }

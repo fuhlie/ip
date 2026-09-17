@@ -63,7 +63,10 @@ public class Storage {
         }
 
         try {
-            Files.createDirectories(filePath.getParent());
+            Path parentDirectory = filePath.getParent();
+            if (parentDirectory != null) {
+                Files.createDirectories(parentDirectory);
+            }
             Files.write(filePath, lines);
         } catch (IOException e) {
             throw new NoriException("I couldn't save your tasks.");
@@ -79,14 +82,17 @@ public class Storage {
         Task task = switch (fields[0]) {
             case "T" -> {
                 requireFieldCount(fields, 3);
+                requireNonBlankFields(fields, 2);
                 yield new Todo(fields[2]);
             }
             case "D" -> {
                 requireFieldCount(fields, 4);
+                requireNonBlankFields(fields, 2, 3);
                 yield new Deadline(fields[2], fields[3]);
             }
             case "E" -> {
                 requireFieldCount(fields, 5);
+                requireNonBlankFields(fields, 2, 3, 4);
                 yield new Event(fields[2], fields[3], fields[4]);
             }
             default -> throw new NoriException(INVALID_DATA_MESSAGE);
@@ -103,6 +109,14 @@ public class Storage {
     private static void requireFieldCount(String[] fields, int expectedCount) throws NoriException {
         if (fields.length != expectedCount) {
             throw new NoriException(INVALID_DATA_MESSAGE);
+        }
+    }
+
+    private static void requireNonBlankFields(String[] fields, int... indexes) throws NoriException {
+        for (int index : indexes) {
+            if (fields[index].isBlank()) {
+                throw new NoriException(INVALID_DATA_MESSAGE);
+            }
         }
     }
 }

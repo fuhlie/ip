@@ -9,10 +9,15 @@ import nori.task.Todo;
  * Coordinates the components of the Nori task-tracking chatbot.
  */
 public class Nori {
+    private static final String STORAGE_SEPARATOR = " | ";
+
     private final Storage storage;
     private final Ui ui;
     private TaskList tasks;
     private boolean shouldExit;
+    private boolean lastResponseWasError;
+    private boolean tasksChanged;
+    private String startupWarning;
 
     /**
      * Creates a chatbot using the default save file and console UI.
@@ -33,6 +38,7 @@ public class Nori {
             tasks = storage.load();
         } catch (NoriException e) {
             tasks = new TaskList();
+            startupWarning = e.getMessage() + " I started with an empty task list so you can keep going.";
         }
     }
 
@@ -71,10 +77,15 @@ public class Nori {
      */
     public String getResponse(String input) {
         try {
+            tasksChanged = false;
             String response = handle(input);
-            storage.save(tasks);
+            if (tasksChanged) {
+                storage.save(tasks);
+            }
+            lastResponseWasError = false;
             return response;
         } catch (NoriException e) {
+            lastResponseWasError = true;
             return e.getMessage();
         }
     }
@@ -85,7 +96,18 @@ public class Nori {
      * @return Nori's greeting.
      */
     public String getWelcomeMessage() {
-        return "Hello! I'm Nori.\nWhat can I do for you?";
+        String greeting = "Hello! I'm Nori, your calm corner for busy days.\n"
+                + "Tell me what you need to remember, or type help.";
+        return startupWarning == null ? greeting : joinLines(greeting, "", startupWarning);
+    }
+
+    /**
+     * Reports whether the most recently processed command produced an error.
+     *
+     * @return True if the latest response explains an invalid command or storage problem.
+     */
+    public boolean wasLastResponseError() {
+        return lastResponseWasError;
     }
 
     /**
@@ -106,7 +128,7 @@ public class Nori {
             case BYE:
                 requireNoArguments(arguments, "bye");
                 shouldExit = true;
-                return "Bye. Hope to see you again soon!";
+                return "All tucked away. Take care, and see you next time!";
             case LIST:
                 requireNoArguments(arguments, "list");
                 return formatTasks(tasks, "Here are the tasks in your list:", "Your task list is empty.");
@@ -115,7 +137,7 @@ public class Nori {
                     throw new NoriException("The search keyword cannot be empty.");
                 }
                 return formatTasks(tasks.find(arguments), "Here are the matching tasks in your list:",
-                        "I couldn't find any matching tasks.");
+                        "Nothing surfaced for that search. Try another keyword?");
             case HELP:
                 requireNoArguments(arguments, "help");
                 return joinLines("Here are the commands you can use:",
@@ -131,23 +153,32 @@ public class Nori {
             case MARK:
                 Task markedTask = tasks.get(parseTaskIndex(arguments));
                 markedTask.mark();
-                return joinLines("Nice! I've marked this task as done:", "  " + markedTask);
+                tasksChanged = true;
+                return joinLines("One less thing to carry — this is now done:", "  " + markedTask);
             case UNMARK:
                 Task unmarkedTask = tasks.get(parseTaskIndex(arguments));
                 unmarkedTask.unmark();
+                tasksChanged = true;
                 return joinLines("OK, I've marked this task as not done yet:", "  " + unmarkedTask);
             case DELETE:
                 Task deletedTask = tasks.remove(parseTaskIndex(arguments));
-                return joinLines("Noted. I've removed this task:", "  " + deletedTask, formatTaskCount());
+                tasksChanged = true;
+                return joinLines("Cleared from your list:", "  " + deletedTask, formatTaskCount());
             case TODO:
                 requireDescription(arguments, "todo");
+                requireStorableText(arguments, "todo DESCRIPTION");
                 return addTask(new Todo(arguments));
             case DEADLINE:
                 String[] deadlineParts = splitAround(arguments, " /by ", "deadline DESCRIPTION /by DATE");
+                requireStorableText(deadlineParts[0], "deadline DESCRIPTION /by DATE");
+                requireStorableText(deadlineParts[1], "deadline DESCRIPTION /by DATE");
                 return addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
             case EVENT:
                 String[] fromParts = splitAround(arguments, " /from ", "event DESCRIPTION /from START /to END");
                 String[] toParts = splitAround(fromParts[1], " /to ", "event DESCRIPTION /from START /to END");
+                requireStorableText(fromParts[0], "event DESCRIPTION /from START /to END");
+                requireStorableText(toParts[0], "event DESCRIPTION /from START /to END");
+                requireStorableText(toParts[1], "event DESCRIPTION /from START /to END");
                 return addTask(new Event(fromParts[0], toParts[0], toParts[1]));
             default:
                 throw new AssertionError("Unhandled command: " + command);
@@ -209,9 +240,16 @@ public class Nori {
         }
     }
 
+    private static void requireStorableText(String text, String usage) throws NoriException {
+        if (text.contains(STORAGE_SEPARATOR)) {
+            throw new NoriException("Please avoid using ' | ' in task details. Try: " + usage);
+        }
+    }
+
     private String addTask(Task task) {
         tasks.add(task);
-        return joinLines("Got it. I've added this task:", "  " + task, formatTaskCount());
+        tasksChanged = true;
+        return joinLines("Safely noted:", "  " + task, formatTaskCount());
     }
 
     private String formatTaskCount() {
