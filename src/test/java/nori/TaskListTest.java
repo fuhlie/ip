@@ -26,4 +26,15 @@ class TaskListTest {
         assertEquals(1, matches.size());
         assertEquals("[T][ ] Read Book", matches.get(0).toString());
     }
+
+    @Test
+    void find_missingKeyword_returnsEmptyIndependentList() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+
+        TaskList matches = tasks.find("groceries");
+
+        assertEquals(0, matches.size());
+        assertEquals(1, tasks.size());
+    }
 }
